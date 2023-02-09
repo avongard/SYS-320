@@ -63,12 +63,18 @@ keep="$(head -1 wg0.conf | awk ' { print $7 } ')"
 # ListenPort
 lport="$(shuf -n1 -i 40000-50000)"
 
+# Check if the IP based on the network:
+
+# Generate the IP
+tempIP=$(grep AllowedIPs wg0.conf | sort -u | tail -1 | cut -d\. -f4 | cut -d\/ -f1)
+ip=$(expr ${tempIP} + 1)
+
 # Default routes for VPN
 routes="$(head -1 wg0.conf | awk ' { print $8 } ')"
 
 # Client configuration
 echo "[Interface]
-Address = 10.254.132.100/24
+Address = 10.254.132.${ip}/24
 DNS = ${dns}
 ListenPort = ${lport}
 MTU = ${mtu}
@@ -90,7 +96,7 @@ echo "
 [Peer]
 Publickey = ${clientPub}
 PresharedKey = ${pre}
-AllowedIPs = 10.254.132.100/32
+AllowedIPs = 10.254.132.${ip}/32
 # ${the_client} end" | tee -a wg0.conf
 
 echo "
